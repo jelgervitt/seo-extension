@@ -1,8 +1,8 @@
-/////////////////////////////////////////////////////////////////////////////
-// this code needs to placed inside the content script
+/******************************************content script***********************************************/
 
 let pageInfo = {};
 
+//  get title or meta tag
 function getTag(query, info, attr) {
   const queryRes = document.querySelectorAll(query);
 
@@ -11,12 +11,22 @@ function getTag(query, info, attr) {
     : (pageInfo[info] = "--none--");
 }
 
-function getTitles() {
-  for (let i = 1; i <= 6; i++) {
-    getTag(`h${i}`, `h${i}`, "textContent");
-  }
+// // get h1 - h6 titles (old version)
+// function getTitles() {
+//   for (let i = 1; i <= 6; i++) {
+//     getTag(`h${i}`, `h${i}`, "textContent");
+//   }
+// }
+
+function getHeadings() {
+  pageInfo.headings = document
+
+    // FIXME remove the first selector for production
+    .querySelector(".testing-content-wrapper")
+    .querySelectorAll("h1, h2, h3, h4, h5, h6");
 }
 
+// get all images on the page
 function getImages() {
   const imgs = document.querySelectorAll("img");
 
@@ -27,8 +37,9 @@ function getImages() {
     : (pageInfo[images] = "--none--");
 }
 
+// get entire body text content
 function getBodyContent() {
-  pageInfo.content = document.body.innerText;
+  pageInfo.bodyContent = document.body.textContent;
 }
 
 function getPageInfo() {
@@ -37,25 +48,107 @@ function getPageInfo() {
   getTag("meta[name='description']", "meta", "content");
 
   // page info for titles tab
-  getTitles();
+  getHeadings();
 
   // page info for images
   getImages();
 
-  // page info for keyword tab
+  // page info for keywords (on-page text content)
   getBodyContent();
 }
 
 getPageInfo();
 
-//////////////////////////////////////////////////////////////////////////////////
-// this code needs to be placed inside of the code for the popup
+/******************************************popup script***********************************************/
+
+/*********************** nav menu tab switching ****************************/
+
+const tabContainer = document.querySelector(".nav-left");
+const navItems = document.querySelectorAll(".nav-item");
+const tabs = document.querySelectorAll(".tab");
+
+function switchTab(e) {
+  e.preventDefault();
+  const clicked = e.target.closest(".nav-item");
+  if (!clicked) return;
+
+  navItems.forEach((tab) => tab.classList.remove("nav-item__active"));
+  clicked.classList.add("nav-item__active");
+
+  tabs.forEach((tab) => tab.classList.remove("tab__active"));
+
+  document
+    .getElementById(`tab__${clicked.dataset.tab}`)
+    .classList.add("tab__active");
+}
+
+tabContainer.addEventListener("click", switchTab);
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//   console.log(request);
+// });
+
+/************************************* meta tags tab ***************************************/
+
+function checkTag(tag) {
+  const titleEl = document.getElementById(`section-item-title__${tag}`);
+  const bodyEl = document.getElementById(`section-item-body__${tag}`);
+  const imgEl = document.getElementById(`icon__${tag}`);
+  const theTag = pageInfo[tag];
+
+  if (theTag === "--none--") {
+    titleEl.textContent = `No ${tag} tag found`;
+    imgEl.src = `../images/seo-extension-fail.svg`;
+    return;
+  }
+
+  if (theTag.length === 1) {
+    titleEl.textContent = `${tag[0].toUpperCase()}${tag.slice(1)} tag found`;
+    bodyEl.textContent = theTag;
+    imgEl.src = `../images/seo-extension-pass.svg`;
+    return;
+  }
+
+  if (theTag.length > 1) {
+    titleEl.textContent = `Multiple ${tag} tags found`;
+    const list = document.createElement("ul");
+    theTag.forEach((tag) =>
+      list.insertAdjacentHTML("beforeend", `<li>${tag}</li>`)
+    );
+    bodyEl.insertAdjacentElement("beforeend", list);
+    imgEl.src = `../images/seo-extension-alert.svg`;
+    return;
+  }
+}
+
+// FIXME: this needs to be added to an overall function that runs when the page is loaded
+checkTag("title");
+checkTag("meta");
+
+/************************************** end of meta tags tab *******************************************/
+
+// TODO count amount of h1 titles, and alert if 0 or >1; return it/them
+// TODO count amount of h2 titles, alert if 0; return them
+// TODO count amount of h3 titles; return them
+// TODO count amount of h4 titles; return them
+// TODO count amount of h5 titles; return them
+// TODO count amount of h6 titles; return them
+// TODO get all image names, and their alt tags; return them
+
+// TODO count the occurrence of the keywords in titles, and show where it occurs
+// TODO scan the occurrence of each keyword in image
+// TODO count keywords in image names and alt tags
+
+// TODO optional challenge: // instead of a single derived 'keyword' meaningful keywords, allow the user to check combinations, and dynamically count based on those preferences
+
+/*********************** keywords tab ****************************/
 
 const checkButton = document.querySelector("#keyword-check__submit");
 
 // Event listeners
 checkButton.addEventListener("click", checkKeyword);
-document.addEventListener("DOMContentLoaded", displayInformation);
+//NOTE: disabled during work on other tabs
+// document.addEventListener("DOMContentLoaded", displayInformation);
 
 // Display all static information on all tabs
 function displayInformation() {
@@ -140,6 +233,7 @@ function checkKeywordInTitles(kw) {
   for (let i = 1; i <= 6; i++) {
     if (pageInfo[`h${i}`] === "--none--") continue;
 
+    // FIXME fix this according to the new headings functionality
     pageInfo[`h${i}`].forEach((title) => {
       if (title.match(keyword)) {
         let output = `
