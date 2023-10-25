@@ -1,4 +1,6 @@
-/******************************************content script***********************************************/
+/************************************************************************************/
+/********************************** content script ************************************/
+/************************************************************************************/
 
 let pageInfo = {};
 
@@ -59,9 +61,11 @@ function getPageInfo() {
 
 getPageInfo();
 
-/******************************************popup script***********************************************/
+/************************************************************************************/
+/********************************** popup script ************************************/
+/************************************************************************************/
 
-/*********************** nav menu tab switching ****************************/
+/********************************* nav menu tab switching *********************************/
 
 const tabContainer = document.querySelector(".nav-left");
 const navItems = document.querySelectorAll(".nav-item");
@@ -125,23 +129,66 @@ function checkTag(tag) {
 checkTag("title");
 checkTag("meta");
 
-/************************************** end of meta tags tab *******************************************/
+/******************************** headings tab *********************************/
 
-// TODO count amount of h1 titles, and alert if 0 or >1; return it/them
-// TODO count amount of h2 titles, alert if 0; return them
-// TODO count amount of h3 titles; return them
-// TODO count amount of h4 titles; return them
-// TODO count amount of h5 titles; return them
-// TODO count amount of h6 titles; return them
+// filters the headings from pageInfo into h1, h2, and h3-h6, checks, and displays results
+function checkHeadings() {
+  const headings = pageInfo.headings;
+  const div = document.getElementById("section-item-h-other");
+
+  let h1 = [];
+  let h2 = [];
+
+  headings.forEach((h) => {
+    if (h.nodeName === "H1") h1.push(h);
+    if (h.nodeName === "H2") h2.push(h);
+    if (h.nodeName !== "H1" && h.nodeName !== "H2") {
+      par = `<p class="section-item-h-other__body-${h.localName}">${h.textContent}</p>`;
+      div.insertAdjacentHTML("beforeend", par);
+    }
+  });
+  parseHeadings(h1, "h1");
+  parseHeadings(h2, "h2");
+}
+
+// helper function for checkHeadings, for h1 and h2 headings (checks and displays result)
+function parseHeadings(arr, name) {
+  const icon = document.getElementById(`icon__${name}`);
+  const title = document.getElementById(`section-item-title__${name}`);
+  const body = document.getElementById(`section-item-body__${name}`);
+  if (arr.length === 0) {
+    icon.src = `../images/seo-extension-fail.svg`;
+    title.textContent = `No ${name.toUpperCase()} heading(s) found`;
+  }
+  if (arr.length === 1) {
+    // console.log("entering the arr.length 1 for: ", name);
+    icon.src = `../images/seo-extension-pass.svg`;
+    title.textContent = `${name.toUpperCase()} heading(s) found`;
+    element = `<li class="section-item-body__${name}-item">${arr[0].textContent}</li>`;
+    body.insertAdjacentHTML("beforeend", element);
+  }
+  if (arr.length > 1) {
+    icon.src =
+      name === "h1"
+        ? `../images/seo-extension-alert.svg`
+        : `../images/seo-extension-pass.svg`;
+    title.textContent = `${name.toUpperCase()} headings found (${arr.length})`;
+    arr.forEach((el) => {
+      element = `<li class="section-item-body__${name}-item">${el.textContent}</li>`;
+      body.insertAdjacentHTML("beforeend", element);
+    });
+  }
+}
+
+// FIXME move this to an overarching function
+checkHeadings();
+
+/******************************** images tab *********************************/
 // TODO get all image names, and their alt tags; return them
 
-// TODO count the occurrence of the keywords in titles, and show where it occurs
-// TODO scan the occurrence of each keyword in image
-// TODO count keywords in image names and alt tags
-
-// TODO optional challenge: // instead of a single derived 'keyword' meaningful keywords, allow the user to check combinations, and dynamically count based on those preferences
-
 /*********************** keywords tab ****************************/
+// TODO count the occurrence of the keywords in titles, and show where it occurs
+// TODO count keywords in image names and alt tags
 
 const checkButton = document.querySelector("#keyword-check__submit");
 

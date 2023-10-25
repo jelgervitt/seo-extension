@@ -16,6 +16,7 @@
 
 html {
   box-sizing: border-box;
+  height: 100%;
   font-family: "Roboto";
 }
 
@@ -72,6 +73,7 @@ ul {
 
 .nav-item {
   font-family: "Roboto Medium";
+  font-size: 1rem;
   padding: 8px 3px;
 }
 
@@ -168,4 +170,15 @@ input.keyword-check__submit:hover {
 
 .keyword-content-variable {
   font-family: "Roboto Medium";
+}
+
+.section-item-h-other__body-h4 {
+  padding-left: 2rem;
+}
+
+.section-item-h-other__body-h5 {
+  padding-left: 3rem;
+}
+.section-item-h-other__body-h6 {
+  padding-left: 4rem;
 }
