@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "On-page SEO analyzer",
-  "version": "1.1",
+  "version": "1.2",
   "description": "A tool to analyze on-page search engine optimizations",
   "icons": {
     "16": "./images/icon-16.png",
