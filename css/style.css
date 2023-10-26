@@ -182,3 +182,9 @@ input.keyword-check__submit:hover {
 .section-item-h-other__body-h6 {
   padding-left: 4rem;
 }
+
+.missing-alt-tag {
+  background: #ff897d;
+  padding: 8px 12px;
+  border-radius: 30px;
+}
