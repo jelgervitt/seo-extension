@@ -86,6 +86,22 @@ getPageInfo();
 /********************************** popup script ************************************/
 /************************************************************************************/
 
+document.addEventListener("DOMContentLoaded", displayAllInformation);
+
+// Display all information in the tabs
+function displayAllInformation() {
+  checkTag("title", "Title tag");
+  checkTag("meta", "Meta description");
+  checkHeadings();
+  checkImages();
+  displayTagInfo("title");
+  displayTagInfo("meta");
+  displayImageInfo();
+  displayLinks("intLinks", "internal");
+  displayLinks("extLinks", "external");
+  displayCanonical();
+}
+
 /********************************* nav menu tab switching *********************************/
 
 const tabContainer = document.querySelector(".nav-left");
@@ -146,10 +162,6 @@ function checkTag(tag, name) {
   }
 }
 
-// FIXME: this needs to be added to an overall function that runs when the page is loaded
-checkTag("title", "Title tag");
-checkTag("meta", "Meta description");
-
 /******************************** headings tab *********************************/
 
 // filters the headings from pageInfo into h1, h2, and h3-h6, checks, and displays results
@@ -199,9 +211,6 @@ function parseHeadings(arr, name) {
     });
   }
 }
-
-// FIXME move this to an overarching function
-// checkHeadings();
 
 /******************************** images tab *********************************/
 
@@ -258,24 +267,12 @@ function checkImages() {
   iconImgAlert.src = `../images/seo-extension-alert.svg`;
 }
 
-// FIXME move this to the overarching function
-// checkImages();
-
 /*********************** keywords tab ****************************/
 
 const checkButton = document.querySelector("#keyword-check__submit");
 
 // Event listeners
 checkButton.addEventListener("click", checkKeyword);
-//NOTE: disabled during work on other tabs
-document.addEventListener("DOMContentLoaded", displayInformation);
-
-// Display title tag, and meta description on the keyword tabs
-function displayInformation() {
-  displayTagInfo("title");
-  displayTagInfo("meta");
-  displayImageInfo();
-}
 
 // Inserts the title and meta description in the info box on the keywords tab
 function displayTagInfo(tag) {
@@ -553,31 +550,3 @@ function displayCanonical() {
       ? `No canonical link found`
       : `The canonical link points to <a href="${canonical}">${canonical}</a>`;
 }
-
-// FIXME place these function calls inside of the overarching display function
-displayLinks("intLinks", "internal");
-displayLinks("extLinks", "external");
-displayCanonical();
-/**
- * <section id="section__internal-links">
-          <h2 class="section-heading" id="section-heading__internal-links">
-            Internal links
-          </h2>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
-              link target
-            </p>
-          </div>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
-              link target
-            </p>
-          </div>
-        </section>
- */
