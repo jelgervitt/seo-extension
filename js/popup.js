@@ -1,6 +1,7 @@
 // Manifest V3 requires async functions
-
 // get id of tab that was open before popup
+
+let pageInfo;
 
 const getTabId = async function () {
   let queryOptions = { active: true, lastFocusedWindow: true };
@@ -8,41 +9,45 @@ const getTabId = async function () {
   return tab.id;
 };
 
-// inject script into page that needs to be processed, return
+// inject script into page that needs to be processed, then return
 
 const injectScript = async function () {
   getTabId().then((theTab) => {
-    chrome.scripting
-      .executeScript({
-        target: { tabId: theTab },
-        files: ["./js/content-script.js"],
-      })
-
-      //TODO remove this after testing
-      .then(() => console.log("script injected"));
+    chrome.scripting.executeScript({
+      target: { tabId: theTab },
+      files: ["./js/content-script.js"],
+    });
   });
 };
 
 injectScript();
 
-function analyzeMessage(message, sender, sendResponse) {
-  console.log(`the message is: ${message.title}; ${message.body}`);
-  console.log(`the sender's tab is: ${sender.tab.tabs}`);
+chrome.runtime.onMessage.addListener((message) => {
+  pageInfo = message;
+  displayAllInformation();
+});
+
+/**************************************** tabs *******************************************/
+
+// Display all information in the tabs
+function displayAllInformation() {
+  checkTag("title", "Title tag");
+  checkTag("meta", "Meta description");
+  checkHeadings();
+  checkImages();
+  displayTagInfo("title", "title tag");
+  displayTagInfo("meta", "meta description");
+  displayImageInfo();
+  displayLinks("intLinks", "internal");
+  displayLinks("extLinks", "external");
+  displayCanonical();
 }
 
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   console.log(request);
-// });
-chrome.runtime.onMessage.addListener(analyzeMessage);
-
-/***********************************************************************/
-/*********************** tabs ************************/
+/********************************* nav menu tab switching *********************************/
 
 const tabContainer = document.querySelector(".nav-left");
 const navItems = document.querySelectorAll(".nav-item");
 const tabs = document.querySelectorAll(".tab");
-
-/*********************** nav menu tab switching ****************************/
 
 function switchTab(e) {
   e.preventDefault();
@@ -61,27 +66,147 @@ function switchTab(e) {
 
 tabContainer.addEventListener("click", switchTab);
 
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   console.log(request);
-// });
+/************************************* meta tags tab ***************************************/
 
-// TODO count amount of h1 titles, and alert if 0 or >1; return it/them
-// TODO count amount of h2 titles, alert if 0; return them
-// TODO count amount of h3 titles; return them
-// TODO count amount of h4 titles; return them
-// TODO count amount of h5 titles; return them
-// TODO count amount of h6 titles; return them
-// TODO get all image names, and their alt tags; return them
+function checkTag(tag, name) {
+  const titleEl = document.getElementById(`section-item-title__${tag}`);
+  const bodyEl = document.getElementById(`section-item-body__${tag}`);
+  const imgEl = document.getElementById(`icon__${tag}`);
+  const theTag = pageInfo[tag];
 
-// TODO from <title> tag (omit common words like: 'the', 'a', 'of', 'in'), and show a list of the derived words; return them
+  if (theTag === "--none--") {
+    titleEl.textContent = `No ${name.toLowerCase()} found`;
+    imgEl.src = `../images/seo-extension-fail.svg`;
+    return;
+  }
 
-// TODO count the occurrence of the keywords in titles, and show where it occurs
-// TODO count the occurrence of keywords in body, and show where it occurs
-// TODO count the occurrence of keywords, and show where it occurs
-// TODO scan the occurrence of each keyword in image
-// TODO count keywords in image names and alt tags
+  if (theTag.length === 1) {
+    titleEl.textContent = `${name} found (${theTag[0].length} characters)`;
+    bodyEl.textContent = theTag;
+    imgEl.src = `../images/seo-extension-pass.svg`;
+    return;
+  }
 
-// TODO optional challenge: // instead of a single derived 'keyword' meaningful keywords, allow the user to check combinations, and dynamically count based on those preferences
+  if (theTag.length > 1) {
+    titleEl.textContent = `Multiple ${name.toLowerCase()}s found`;
+    const list = document.createElement("ul");
+    theTag.forEach((tag) =>
+      list.insertAdjacentHTML("beforeend", `<li>${tag}</li>`)
+    );
+    bodyEl.insertAdjacentElement("beforeend", list);
+    imgEl.src = `../images/seo-extension-alert.svg`;
+    return;
+  }
+}
+
+/******************************** headings tab *********************************/
+
+// filters the headings from pageInfo into h1, h2, and h3-h6, checks, and displays results
+function checkHeadings() {
+  const headings = pageInfo.headings;
+  const div = document.getElementById("section-item-h-other");
+
+  let h1 = [];
+  let h2 = [];
+
+  headings.forEach((h) => {
+    if (h.nodeName === "H1") h1.push(h);
+    if (h.nodeName === "H2") h2.push(h);
+    if (h.nodeName !== "H1" && h.nodeName !== "H2") {
+      par = `<p class="section-item-h-other__body-${h.localName}">(${h.nodeName}) ${h.textContent}</p>`;
+      div.insertAdjacentHTML("beforeend", par);
+    }
+  });
+  if (div.hasChildNodes !== true) {
+    par = `<h3 class="section-item-h-other__body">--- End of headings found ---</h3>`;
+    div.insertAdjacentHTML("beforeend", par);
+  }
+  parseHeadings(h1, "h1");
+  parseHeadings(h2, "h2");
+}
+
+// helper function for checkHeadings, for h1 and h2 headings (checks and displays result)
+function parseHeadings(arr, name) {
+  const icon = document.getElementById(`icon__${name}`);
+  const title = document.getElementById(`section-item-title__${name}`);
+  const body = document.getElementById(`section-item-body__${name}`);
+  if (arr.length === 0) {
+    icon.src = `../images/seo-extension-fail.svg`;
+    title.textContent = `No ${name.toUpperCase()} heading found`;
+  }
+  if (arr.length === 1) {
+    icon.src = `../images/seo-extension-pass.svg`;
+    title.textContent = `${name.toUpperCase()} heading found`;
+    element = `<li class="section-item-body__${name}-item">${arr[0].textContent}</li>`;
+    body.insertAdjacentHTML("beforeend", element);
+  }
+  if (arr.length > 1) {
+    icon.src =
+      name === "h1"
+        ? `../images/seo-extension-alert.svg`
+        : `../images/seo-extension-pass.svg`;
+    title.textContent = `${name.toUpperCase()} headings found (${arr.length})`;
+    arr.forEach((el) => {
+      element = `<li class="section-item-body__${name}-item">${el.textContent}</li>`;
+      body.insertAdjacentHTML("beforeend", element);
+    });
+  }
+}
+
+/******************************** images tab *********************************/
+
+function checkImages() {
+  const imgs = pageInfo.images;
+  const imgHeading = document.getElementById("section-heading__images");
+  const iconImgPass = document.getElementById("icon__images-pass");
+  const iconImgAlert = document.getElementById("icon__images-alert");
+  const titleImgPass = document.getElementById(
+    "section-item-title__images-pass"
+  );
+  const titleImgAlert = document.getElementById(
+    "section-item-title__images-alert"
+  );
+  const imgSection = document.getElementById("section__image-details");
+
+  let altPass = 0;
+  let altAlert = 0;
+
+  if (imgs === "--none--") {
+    imgHeading.textContent = `Images (0)`;
+    iconImgPass.src = `../images/seo-extension-fail.svg`;
+    titleImgPass.textContent = "No images found";
+    return;
+  }
+
+  imgs.forEach((img, index) => {
+    img.alt === "" ? (altAlert += 1) : (altPass += 1);
+    let element = `
+      <div class="section-item" id="section-item__image-details-${index}">
+      <div class="section-item-content">
+        <h3
+          class="section-item-title"
+          id="section-item-title__image-details-${index}"
+        >
+          ${img.name}
+        </h3>
+        <p
+          class="section-item-body"
+          id="section-item-body__image-details-${index}"
+        >
+          ${img.alt || `<span class="missing-alt-tag">Alt tag missing</span>`}
+        </p>
+      </div>
+    </div>
+    `;
+    imgSection.insertAdjacentHTML("beforeend", element);
+  });
+
+  imgHeading.textContent = `Images (${imgs.length})`;
+  titleImgPass.textContent = `Images with alt tags (${altPass})`;
+  iconImgPass.src = `../images/seo-extension-pass.svg`;
+  titleImgAlert.textContent = `Images missing alt tags (${altAlert})`;
+  iconImgAlert.src = `../images/seo-extension-alert.svg`;
+}
 
 /*********************** keywords tab ****************************/
 
@@ -89,33 +214,55 @@ const checkButton = document.querySelector("#keyword-check__submit");
 
 // Event listeners
 checkButton.addEventListener("click", checkKeyword);
-document.addEventListener("DOMContentLoaded", displayInformation);
-
-// Display all static information on all tabs
-function displayInformation() {
-  displayTagInfo("title");
-  displayTagInfo("meta");
-}
 
 // Inserts the title and meta description in the info box on the keywords tab
-function displayTagInfo(tag) {
+function displayTagInfo(tag, name) {
   const tags = pageInfo[tag];
   const div = document.getElementById(`keyword-check-infobox__div-${tag}`);
-
+  console.log(tags);
+  if (tags === "--none--") {
+    let output = `<p class="keyword-check-infobox__body">No ${name.toLowerCase()} found</p>`;
+    div.insertAdjacentHTML("beforeend", output);
+    return;
+  }
   tags.forEach((el) => {
     let output = `<p class="keyword-check-infobox__body-${tag}">${el}</p>`;
     div.insertAdjacentHTML("beforeend", output);
   });
 }
 
-// reset the title and meta tag on the keyword tab
-function resetTagInfo(tag) {
+function displayImageInfo() {
+  const imgs = pageInfo.images;
+  const imgContainer = document.getElementById(
+    "section-item-container__keyword-in-images"
+  );
+  const imgHeading = document.getElementById(
+    "section-heading__keyword-in-images"
+  );
+
+  if (imgs === "--none--") {
+    imgHeading.textContent = `Keyword in images (0)`;
+    element = `
+      <div class="section-item section-item__keyword-in-images">
+        <p
+          class="section-item-content section-item-content__keyword-in-images"
+        >
+          No images found on the page
+        </p>
+      </div>
+    `;
+    imgContainer.insertAdjacentHTML("beforeend", element);
+  }
+}
+
+// reset the title and meta tag on the keyword tab (removes search marking)
+function resetTagInfo(tag, name) {
   const infoBoxTags = document.querySelectorAll(
     `.keyword-check-infobox__body-${tag}`
   );
 
   infoBoxTags.forEach((el) => el.remove());
-  displayTagInfo(tag);
+  displayTagInfo(tag, name);
 }
 
 // checks the keyword in the page information object
@@ -124,8 +271,8 @@ function checkKeyword(event) {
   const keyword = document.querySelector("#keyword-check__input").value;
 
   // reset the info box with title and meta tag (removes marking)
-  resetTagInfo("title");
-  resetTagInfo("meta");
+  resetTagInfo("title", "title tag");
+  resetTagInfo("meta", "meta description");
 
   // check if user has input a keyword
   if (!keyword) return;
@@ -138,6 +285,7 @@ function checkKeyword(event) {
   checkKeywordInTags(keyword, "meta");
   checkKeywordInTitles(keyword);
   checkKeywordInContent(keyword);
+  checkKeywordInImages(keyword);
 }
 
 // check the keyword in the infobox tags
@@ -165,34 +313,32 @@ function checkKeywordInTitles(kw) {
   const sectionTitle = document.querySelector(
     "#section-heading__keyword-in-title"
   );
-
+  const titles = pageInfo.headings;
   let counter = 0;
 
   contentBox.innerHTML = "";
 
   // search for keyword in titles, and output on form
-  for (let i = 1; i <= 6; i++) {
-    if (pageInfo[`h${i}`] === "--none--") continue;
+  if (titles === "--none--") return;
 
-    pageInfo[`h${i}`].forEach((title) => {
-      if (title.match(keyword)) {
-        let output = `
-          <div class="section-item section-item__keyword-in-title">
-          <img
-          src="../images/seo-extension-h${i}.svg"
-          class="icon section-item-icon"
-          />
-          <p class="section-item-content">
-          ${title}
-          </p>
-          </div>
-          `;
-        contentBox.insertAdjacentHTML("beforeend", output);
-        counter++;
-      }
-      // TODO maybe add functionality to store these derived titles in a separate property, so they can be output in the pdf.
-    });
-  }
+  titles.forEach((title) => {
+    let titleContent = title.textContent;
+    if (titleContent.match(keyword)) {
+      let output = `
+        <div class="section-item section-item__keyword-in-title">
+        <img
+        src="../images/seo-extension-${title.localName}.svg"
+        class="icon section-item-icon"
+        />
+        <p class="section-item-content">
+        ${titleContent}
+        </p>
+        </div>
+        `;
+      contentBox.insertAdjacentHTML("beforeend", output);
+      counter++;
+    }
+  });
   sectionTitle.textContent = `Keyword in titles (${counter})`;
 }
 
@@ -200,14 +346,14 @@ function checkKeywordInTitles(kw) {
 function checkKeywordInContent(kw) {
   // calculate length of keyword or keyphrase
   const keyword = new RegExp(`(${kw})` + "\\b", "gi");
-
+  const content = pageInfo.bodyContent;
   const keywordLength = pageInfo.keyword.split(" ").length;
 
   // calculate total word count
-  const wordCount = pageInfo.content?.length;
+  const wordCount = content?.length;
 
   // check for matches of keyword in content
-  const keywordCount = pageInfo.content.toLowerCase().match(keyword);
+  const keywordCount = content.toLowerCase().match(keyword);
 
   // calculate keyword density (keyword/100 words)
   let keywordDensity = 0;
@@ -244,4 +390,110 @@ function checkKeywordInContent(kw) {
   keywordCountOutput.textContent = keywordCount?.length || "0";
   wordCountOutput.textContent = wordCount || "0";
   keywordDensityOutput.textContent = `${keywordDensity}%`;
+}
+
+function removeKeywordImageResults() {
+  const imgContainer = document.getElementById(
+    "section-item-container__keyword-in-images"
+  );
+  while (imgContainer.firstChild) {
+    imgContainer.removeChild(imgContainer.lastChild);
+  }
+}
+
+function checkKeywordInImages(kw) {
+  const keyword = new RegExp(`(${kw})` + "\\b", "gi");
+  const imgs = pageInfo.images;
+  const imgSection = document.getElementById("section__keyword-in-images");
+  const imgHeading = document.getElementById(
+    "section-heading__keyword-in-images"
+  );
+  const imgContainer = document.getElementById(
+    "section-item-container__keyword-in-images"
+  );
+
+  let counter = 0;
+
+  if (imgs === "--none--") return;
+
+  removeKeywordImageResults();
+
+  imgs.forEach((img) => {
+    const name = img.name;
+    const alt = img.alt;
+    if (name.match(keyword) || alt.match(keyword)) {
+      let element = `
+        <div class="section-item" id="section-item__image-details-${counter}">
+          <div class="section-item-content">
+            <h3
+              class="section-item-title"
+              id="section-item-title__image-details-${counter}"
+            >
+              ${name}
+            </h3>
+            <p
+              class="section-item-body"
+              id="section-item-body__image-details-${counter}"
+            >
+              ${alt || `<span class="missing-alt-tag">Alt tag missing</span>`}
+            </p>
+          </div>
+        </div>
+        `;
+      imgContainer.insertAdjacentHTML("beforeend", element);
+      counter++;
+    }
+  });
+}
+
+/******************************** links tab *********************************/
+
+function displayLinks(linksArr, type) {
+  const links = pageInfo[linksArr];
+  const linkTitle = document.getElementById(`section-heading__${type}-links`);
+  const linkContainer = document.getElementById(
+    `section-item-container__${type}-links`
+  );
+  let counter = 0;
+
+  if (links === "--none--") {
+    linkTitle.textContent = `Internal links (0)`;
+    element = `
+        <p
+          class="section-item-content section-item-content__keyword-in-images"
+        >
+          No ${type} links found on the page
+        </p>
+    `;
+    linkTitle.insertAdjacentHTML("beforeend", element);
+    return;
+  }
+
+  links.forEach((link) => {
+    element = `
+      <div class="section-item section-item-column section-item__link">
+        <h3 class="section-item-title section-item-title__link">
+          Anchor text: ${link.textContent}
+        </h3>
+        <p class="section-item-content section-item-content__link">
+          <a href="${link.href}">${link.href}</a>
+        </p>
+    </div>`;
+    linkContainer.insertAdjacentHTML("beforeend", element);
+    counter++;
+  });
+
+  linkTitle.textContent = `${type[0].toUpperCase()}${type.slice(
+    1
+  )} links (${counter})`;
+}
+
+function displayCanonical() {
+  const par = document.getElementById("section-item__canonical");
+  const canonical = pageInfo.canonical;
+
+  par.innerHTML =
+    canonical === "--none--"
+      ? `No canonical link found`
+      : `The canonical link points to <a href="${canonical}">${canonical}</a>`;
 }

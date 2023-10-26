@@ -1,9 +1,8 @@
-let pageInfo = {};
+if (typeof pageInfo === "undefined") {
+  pageInfo = {};
+}
 
-// TODO: activate export module when clicking export button
-
-/****************************************************************************
-/*************************** gather on-page data **************************/
+// let pageInfo = {};
 
 //  get title or meta tag
 function getTag(query, info, attr) {
@@ -14,11 +13,16 @@ function getTag(query, info, attr) {
     : (pageInfo[info] = "--none--");
 }
 
-// get h1 - h6 titles
-function getTitles() {
-  for (let i = 1; i <= 6; i++) {
-    getTag(`h${i}`, `h${i}`, "textContent");
-  }
+function getHeadings() {
+  pageInfo.headings = [
+    ...document.querySelectorAll("h1, h2, h3, h4, h5, h6"),
+  ].map((heading) => {
+    return {
+      nodeName: heading.nodeName,
+      localName: heading.localName,
+      textContent: heading.textContent,
+    };
+  });
 }
 
 // get all images on the page
@@ -29,7 +33,7 @@ function getImages() {
     ? (pageInfo["images"] = Array.from(imgs).map((img) => {
         return { alt: img.alt, name: img.src.split("/").at(-1) };
       }))
-    : (pageInfo[images] = "--none--");
+    : (pageInfo["images"] = "--none--");
 }
 
 // get entire body text content
@@ -37,19 +41,45 @@ function getBodyContent() {
   pageInfo.bodyContent = document.body.textContent;
 }
 
+// get all links
+function getLinks() {
+  const links = document.querySelectorAll("a");
+
+  if (links?.length === 0) {
+    pageInfo.extLinks = "--none--";
+    pageInfo.intLinks = "--none--";
+    return;
+  }
+
+  pageInfo.extLinks = [...links]
+    .filter((node) => node.host !== document.location.host)
+    .map((link) => {
+      return { textContent: link.textContent, href: link.href };
+    });
+  pageInfo.intLinks = [...links]
+    .filter((node) => node.host === document.location.host)
+    .map((link) => {
+      return { textContent: link.innerText, href: link.href };
+    });
+}
+
 function getPageInfo() {
-  // page info for meta tag tab
+  // page info for meta tag tab (args are always: 'element name', 'property name in pageInfo', 'attribute to extract')
   getTag("title", "title", "textContent");
   getTag("meta[name='description']", "meta", "content");
+  getTag("link[rel='canonical']", "canonical", "href");
 
   // page info for titles tab
-  getTitles();
+  getHeadings();
 
   // page info for images
   getImages();
 
   // page info for keywords (on-page text content)
   getBodyContent();
+
+  // get all hyperlinks
+  getLinks();
 }
 
 getPageInfo();
