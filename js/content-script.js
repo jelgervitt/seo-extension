@@ -38,7 +38,7 @@ function getImages() {
 
 // get entire body text content
 function getBodyContent() {
-  pageInfo.bodyContent = document.body.textContent;
+  pageInfo.bodyContent = document.body.innerText;
 }
 
 // get all links

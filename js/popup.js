@@ -37,6 +37,7 @@ function displayAllInformation() {
   checkImages();
   displayTagInfo("title", "title tag");
   displayTagInfo("meta", "meta description");
+  displayWordCount();
   displayImageInfo();
   displayLinks("intLinks", "internal");
   displayLinks("extLinks", "external");
@@ -105,7 +106,7 @@ function checkTag(tag, name) {
 function checkHeadings() {
   const headings = pageInfo.headings;
   const div = document.getElementById("section-item-h-other");
-
+  let counter = 0;
   let h1 = [];
   let h2 = [];
 
@@ -115,10 +116,12 @@ function checkHeadings() {
     if (h.nodeName !== "H1" && h.nodeName !== "H2") {
       par = `<p class="section-item-h-other__body-${h.localName}">(${h.nodeName}) ${h.textContent}</p>`;
       div.insertAdjacentHTML("beforeend", par);
+      counter++;
     }
   });
-  if (div.hasChildNodes !== true) {
-    par = `<h3 class="section-item-h-other__body">--- End of headings found ---</h3>`;
+
+  if (counter === 0) {
+    par = `<h3 class="section-item-h-other__body">No other headings found</h3>`;
     div.insertAdjacentHTML("beforeend", par);
   }
   parseHeadings(h1, "h1");
@@ -187,13 +190,19 @@ function checkImages() {
           class="section-item-title"
           id="section-item-title__image-details-${index}"
         >
-          ${img.name}
+          Name: ${
+            img.name.length < 65 ? img.name : `${img.name.slice(0, 65)} [...]`
+          }
         </h3>
         <p
           class="section-item-body"
           id="section-item-body__image-details-${index}"
         >
-          ${img.alt || `<span class="missing-alt-tag">Alt tag missing</span>`}
+          ${
+            img.alt
+              ? `Alt text: ${img.alt}`
+              : `<span class="missing-alt-tag">Alt tag missing</span>`
+          }
         </p>
       </div>
     </div>
@@ -215,11 +224,11 @@ const checkButton = document.querySelector("#keyword-check__submit");
 // Event listeners
 checkButton.addEventListener("click", checkKeyword);
 
-// Inserts the title and meta description in the info box on the keywords tab
+// Inserts the title and meta description in the info box on the keywords tab, and the amount of words on the page
 function displayTagInfo(tag, name) {
   const tags = pageInfo[tag];
   const div = document.getElementById(`keyword-check-infobox__div-${tag}`);
-  console.log(tags);
+
   if (tags === "--none--") {
     let output = `<p class="keyword-check-infobox__body">No ${name.toLowerCase()} found</p>`;
     div.insertAdjacentHTML("beforeend", output);
@@ -229,6 +238,23 @@ function displayTagInfo(tag, name) {
     let output = `<p class="keyword-check-infobox__body-${tag}">${el}</p>`;
     div.insertAdjacentHTML("beforeend", output);
   });
+}
+
+function displayWordCount() {
+  const wordCountOutput = document.getElementById(
+    "section-item-content__word-count"
+  );
+
+  const wordCount = pageInfo.bodyContent?.length
+    ? pageInfo.bodyContent.split(" ").length
+    : 0;
+
+  if (wordCount) pageInfo.bodyWordCount = wordCount;
+
+  wordCountOutput.insertAdjacentHTML(
+    "beforeend",
+    `<span class="keyword-content-variable">${wordCount || "0"}</span>`
+  );
 }
 
 function displayImageInfo() {
@@ -347,10 +373,8 @@ function checkKeywordInContent(kw) {
   // calculate length of keyword or keyphrase
   const keyword = new RegExp(`(${kw})` + "\\b", "gi");
   const content = pageInfo.bodyContent;
+  const wordCount = pageInfo.bodyWordCount;
   const keywordLength = pageInfo.keyword.split(" ").length;
-
-  // calculate total word count
-  const wordCount = content?.length;
 
   // check for matches of keyword in content
   const keywordCount = content.toLowerCase().match(keyword);
@@ -381,15 +405,19 @@ function checkKeywordInContent(kw) {
   const keywordCountOutput = document.getElementById(
     "section-item-content__keyword-count"
   );
-  const wordCountOutput = document.getElementById(
-    "section-item-content__word-count"
-  );
   const keywordDensityOutput = document.getElementById(
     "section-item-content__keyword-density"
   );
-  keywordCountOutput.textContent = keywordCount?.length || "0";
-  wordCountOutput.textContent = wordCount || "0";
-  keywordDensityOutput.textContent = `${keywordDensity}%`;
+  keywordCountOutput.insertAdjacentHTML(
+    "beforeend",
+    `<span class="keyword-content-variable">${
+      keywordCount?.length || "0"
+    }</span>`
+  );
+  keywordDensityOutput.insertAdjacentHTML(
+    "beforeend",
+    `<span class="keyword-content-variable">${keywordDensity}%</span>`
+  );
 }
 
 function removeKeywordImageResults() {
