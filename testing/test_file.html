@@ -170,7 +170,7 @@
 
       <!-- ----------------Start of keywords tab --------------- -->
 
-      <div class="tab tab__active" id="tab__keywords">
+      <div class="tab" id="tab__keywords">
         <section id="section__form">
           <h2 class="section-heading" id="section-heading__keywords">
             Keyword check
@@ -257,46 +257,53 @@
       <!-- ----------------End of keywords tab --------------- -->
 
       <!-- ----------------Start of links tab --------------- -->
-      <div class="tab" id="tab__links">
+      <div class="tab tab__active" id="tab__links">
         <section id="section__internal-links">
           <h2 class="section-heading" id="section-heading__internal-links">
             Internal links
           </h2>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
-              link target
-            </p>
-          </div>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
-              link target
-            </p>
+          <div
+            class="section-item-container"
+            id="section-item-container__internal-links"
+          >
+            <div class="section-item section-item-column section-item__link">
+              <h3 class="section-item-title section-item-title__link">
+                link text
+              </h3>
+              <p class="section-item-content section-item-content__link">
+                link target
+              </p>
+            </div>
+            <div class="section-item section-item-column section-item__link">
+              <h3 class="section-item-title section-item-title__link">
+                link text
+              </h3>
+              <p class="section-item-content section-item-content__link">
+                link target
+              </p>
+            </div>
           </div>
         </section>
 
         <section id="section__external-links">
-          <h2 class="section-heading" id="section-heading__external-links">
-            External links
-          </h2>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
-              link target
-            </p>
-          </div>
-          <div class="section-item section-item-column section-item__link">
-            <h3 class="section-item-title section-item-title__link">
-              link text
-            </h3>
-            <p class="section-item-content section-item-content__link">
+          <div class="section-item-container" id="section-item-container__external-links">
+            <div class="section-item section-item-column section-item__link">
+              <h3 class="section-item-title section-item-title__link">
+                link text
+              </h3>
+              <p class="section-item-content section-item-content__link">
+                link target
+              </p>
+            </div>
+            <div class="section-item section-item-column section-item__link">
+              <h3 class="section-item-title section-item-title__link">
+                link text
+              </h3>
+              <p class="section-item-content section-item-content__link">
+                link target
+              </p>
+            </div>
+          </div>lass="section-item-content section-item-content__link">
               link target
             </p>
           </div>
@@ -306,26 +313,10 @@
           <h2 class="section-heading" id="heading__canonical">
             Canonical link
           </h2>
-
-          <div class="section-item" id="section-item__canonical">
-            <div
-              class="section-item-icon"
-              id="
-                section-item-icon__canonical"
-            >
-              <img class="icon" id="icon__canonical" src="" />
-            </div>
-            <div class="section-item-content">
-              <h3
-                class="section-item-title"
-                id="section-item-title__canonical"
-              ></h3>
-              <p
-                class="section-item-body"
-                id="section-item-body__canonical"
-              ></p>
-            </div>
-          </div>
+          <p class="section-item-content section-item-content__link">
+            Canonical link is
+            <a href="https://www.address.com">https://www.address.com</a>
+          </p>
         </section>
       </div>
 
@@ -350,8 +341,10 @@
       <h2>MDD hosting review</h2>
       <h2>Questions to ask yourself</h2>
       <p>here's some <strong>regular</strong> content</p>
-      <p>mdd hosting</p>
-      <p>MDD hosting</p>
+      <p>mdd hosting <a href="https://chunkysquirrel.com">My Link</a></p>
+      <p>MDD hosting <a href="https://www.google.com">Google</a></p>
+      <p>MDD hosting <a href="127.0.0.1:8080">internal link</a></p>
+
       <img src="mdd-hosting-site-builder.png" alt="test" width="500px" />
       <img src="wordpress-connect-elementor.png" alt="" />
     </div>

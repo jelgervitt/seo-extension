@@ -2,7 +2,12 @@
 /********************************** content script ************************************/
 /************************************************************************************/
 
-let pageInfo = {};
+let pageInfo = {
+  title: [],
+  meta: [],
+  extLinks: [],
+  intLinks: [],
+};
 
 //  get title or meta tag
 function getTag(query, info, attr) {
@@ -40,6 +45,24 @@ function getBodyContent() {
   pageInfo.bodyContent = document.body.textContent;
 }
 
+// get all links
+function getLinks() {
+  const links = document.querySelectorAll("a");
+  const intLinks = pageInfo.intLinks;
+  const extLinks = pageInfo.extLinks;
+
+  if (!links) {
+    extLinks.push("--none--");
+    intLinks.push("--none--");
+    return;
+  }
+
+  links.forEach((link) => {
+    if (link.host === document.location.host) intLinks.push(link.href);
+    if (link.host !== document.location.host) extLinks.push(link.href);
+  });
+}
+
 function getPageInfo() {
   // page info for meta tag tab (args are always: 'element name', 'property name in pageInfo', 'attribute to extract')
   getTag("title", "title", "textContent");
@@ -54,6 +77,9 @@ function getPageInfo() {
 
   // page info for keywords (on-page text content)
   getBodyContent();
+
+  // get all hyperlinks
+  getLinks();
 }
 
 getPageInfo();
@@ -449,7 +475,9 @@ function checkKeywordInImages(kw) {
   let counter = 0;
 
   if (imgs === "--none--") return;
+
   removeKeywordImageResults();
+
   imgs.forEach((img) => {
     const name = img.name;
     const alt = img.alt;
@@ -479,6 +507,108 @@ function checkKeywordInImages(kw) {
 }
 
 /******************************** links tab *********************************/
-// TODO get all image names, and their alt tags; return them
+
 // The canonical link is saved in pageInfo.canonical, and you can parse it (if desired) through the checkTag function, but it'll output a full check. So maybe build a separate function for it that simplifies that and doesn't show the icon. Also change the html for it to remove that part.
 // checkTag("canonical", "Canonical tag");
+
+function displayLinks() {
+  const intLinks = pageInfo.intLinks;
+  const extLinks = pageInfo.extLinks;
+  const intLinkTitle = document.getElementById(
+    "section-heading__internal-links"
+  );
+  const extLinkTitle = document.getElementById(
+    "section-heading__external-links"
+  );
+  const intLinkContainer = document.getElementById(
+    "section-item-container__internal-links"
+  );
+  const extLinkContainer = document.getElementById(
+    "section-item-container__external-links"
+  );
+
+  if (intLinks[0] === "--none--") {
+    intLinkTitle.textContent = `Internal links (0)`;
+    element = `
+        <p
+          class="section-item-content section-item-content__keyword-in-images"
+        >
+          No internal links found on the page
+        </p>
+    `;
+    intLinkTitle.insertAdjacentHTML("beforeend", element);
+    return;
+  }
+
+  if (extLinks[0] === "--none--") {
+    extLinkTitle.textContent = `External links (0)`;
+    element = `
+        <p
+          class="section-item-content section-item-content__keyword-in-images"
+        >
+          No external links found on the page
+        </p>
+    `;
+    extLinkTitle.insertAdjacentHTML("beforeend", element);
+    return;
+  }
+
+  // TODO write the output for stepping through the internal, and external links;
+  // TODO rewrite this section into separate functions that get called on internal, and external links, to deduplicate everything.
+
+  //   imgs.forEach((img, index) => {
+  //     img.alt === "" ? (altAlert += 1) : (altPass += 1);
+  //     let element = `
+  //       <div class="section-item" id="section-item__image-details-${index}">
+  //       <div class="section-item-content">
+  //         <h3
+  //           class="section-item-title"
+  //           id="section-item-title__image-details-${index}"
+  //         >
+  //           ${img.name}
+  //         </h3>
+  //         <p
+  //           class="section-item-body"
+  //           id="section-item-body__image-details-${index}"
+  //         >
+  //           ${img.alt || `<span class="missing-alt-tag">Alt tag missing</span>`}
+  //         </p>
+  //       </div>
+  //     </div>
+  //     `;
+  //     imgSection.insertAdjacentHTML("beforeend", element);
+  //   });
+
+  //   imgHeading.textContent = `Images (${imgs.length})`;
+  //   titleImgPass.textContent = `Images with alt tags (${altPass})`;
+  //   iconImgPass.src = `../images/seo-extension-pass.svg`;
+  //   titleImgAlert.textContent = `Images missing alt tags (${altAlert})`;
+  //   iconImgAlert.src = `../images/seo-extension-alert.svg`;
+  // }
+}
+
+displayLinks();
+
+/**
+ * <section id="section__internal-links">
+          <h2 class="section-heading" id="section-heading__internal-links">
+            Internal links
+          </h2>
+          <div class="section-item section-item-column section-item__link">
+            <h3 class="section-item-title section-item-title__link">
+              link text
+            </h3>
+            <p class="section-item-content section-item-content__link">
+              link target
+            </p>
+          </div>
+          <div class="section-item section-item-column section-item__link">
+            <h3 class="section-item-title section-item-title__link">
+              link text
+            </h3>
+            <p class="section-item-content section-item-content__link">
+              link target
+            </p>
+          </div>
+        </section>
+ */
