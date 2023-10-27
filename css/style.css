@@ -90,6 +90,7 @@ ul {
 }
 
 #icon__export {
+  display: none;
   width: 32px;
   border-bottom: 2px solid #ffddb4;
 }

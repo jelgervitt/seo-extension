@@ -310,8 +310,8 @@ function checkKeyword(event) {
   checkKeywordInTags(keyword, "title");
   checkKeywordInTags(keyword, "meta");
   checkKeywordInTitles(keyword);
-  checkKeywordInContent(keyword);
   checkKeywordInImages(keyword);
+  checkKeywordInContent(keyword);
 }
 
 // check the keyword in the infobox tags
@@ -375,7 +375,13 @@ function checkKeywordInContent(kw) {
   const content = pageInfo.bodyContent;
   const wordCount = pageInfo.bodyWordCount;
   const keywordLength = pageInfo.keyword.split(" ").length;
-
+  // output results
+  const keywordCountOutput = document.getElementById(
+    "section-item-content__keyword-count"
+  );
+  const keywordDensityOutput = document.getElementById(
+    "section-item-content__keyword-density"
+  );
   // check for matches of keyword in content
   const keywordCount = content.toLowerCase().match(keyword);
 
@@ -401,29 +407,34 @@ function checkKeywordInContent(kw) {
 
   pageInfo.keywordDensity = keywordDensity;
 
-  // output results
-  const keywordCountOutput = document.getElementById(
-    "section-item-content__keyword-count"
-  );
-  const keywordDensityOutput = document.getElementById(
-    "section-item-content__keyword-density"
-  );
   keywordCountOutput.insertAdjacentHTML(
     "beforeend",
-    `<span class="keyword-content-variable">${
+    `<span class="keyword-content-variable" id="section-item-content__keyword-count-result">${
       keywordCount?.length || "0"
     }</span>`
   );
   keywordDensityOutput.insertAdjacentHTML(
     "beforeend",
-    `<span class="keyword-content-variable">${keywordDensity}%</span>`
+    `<span class="keyword-content-variable" id="section-item-content__keyword-density-result">${keywordDensity}%</span>`
   );
 }
 
-function removeKeywordImageResults() {
+function removeKeywordResults() {
   const imgContainer = document.getElementById(
     "section-item-container__keyword-in-images"
   );
+
+  console.log("now removing");
+  const keywordCountResult = document.getElementById(
+    "section-item-content__keyword-count-result"
+  );
+  const keywordDensityResult = document.getElementById(
+    "section-item-content__keyword-density-result"
+  );
+  console.log("removed");
+  if (keywordCountResult) keywordCountResult.remove();
+  if (keywordDensityResult) keywordDensityResult.remove();
+
   while (imgContainer.firstChild) {
     imgContainer.removeChild(imgContainer.lastChild);
   }
@@ -444,7 +455,7 @@ function checkKeywordInImages(kw) {
 
   if (imgs === "--none--") return;
 
-  removeKeywordImageResults();
+  removeKeywordResults();
 
   imgs.forEach((img) => {
     const name = img.name;
