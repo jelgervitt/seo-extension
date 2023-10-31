@@ -89,16 +89,6 @@ ul {
   width: 32px;
 }
 
-#icon__export {
-  display: none;
-  width: 32px;
-  border-bottom: 2px solid #ffddb4;
-}
-
-#icon__export:hover {
-  border-bottom: 2px solid #291800;
-}
-
 .tab {
   padding: 12px 12px;
   display: none;
