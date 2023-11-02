@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "On-page SEO analyzer",
-  "version": "1.3",
+  "name": "On-page SEO analyzer by Chunky Squirrel",
+  "version": "1.5",
   "description": "A tool to analyze on-page search engine optimizations",
   "icons": {
     "16": "./images/icon-16.png",
@@ -24,5 +24,5 @@
       "128": "./images/icon-128.png"
     }
   },
-  "permissions": ["activeTab", "scripting", "tabs"]
+  "permissions": ["activeTab", "scripting"]
 }
