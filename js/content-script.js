@@ -2,8 +2,6 @@ if (typeof pageInfo === "undefined") {
   pageInfo = {};
 }
 
-// let pageInfo = {};
-
 //  get title or meta tag
 function getTag(query, info, attr) {
   const queryRes = document.querySelectorAll(query);
@@ -56,6 +54,7 @@ function getLinks() {
     .map((link) => {
       return { textContent: link.textContent, href: link.href };
     });
+
   pageInfo.intLinks = [...links]
     .filter((node) => node.host === document.location.host)
     .map((link) => {

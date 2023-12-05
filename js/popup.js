@@ -35,12 +35,12 @@ function displayAllInformation() {
   checkTag("meta", "Meta description");
   checkHeadings();
   checkImages();
+  checkIntLinks("intLinks", "internal");
+  displayExtLinks("extLinks", "external");
   displayTagInfo("title", "title tag");
   displayTagInfo("meta", "meta description");
   displayWordCount();
   displayImageInfo();
-  displayLinks("intLinks", "internal");
-  displayLinks("extLinks", "external");
   displayCanonical();
 }
 
@@ -103,6 +103,7 @@ function checkTag(tag, name) {
 /******************************** headings tab *********************************/
 
 // filters the headings from pageInfo into h1, h2, and h3-h6, checks, and displays results
+
 function checkHeadings() {
   const headings = pageInfo.headings;
   const div = document.getElementById("section-item-h-other");
@@ -129,6 +130,7 @@ function checkHeadings() {
 }
 
 // helper function for checkHeadings, for h1 and h2 headings (checks and displays result)
+
 function parseHeadings(arr, name) {
   const icon = document.getElementById(`icon__${name}`);
   const title = document.getElementById(`section-item-title__${name}`);
@@ -222,9 +224,11 @@ function checkImages() {
 const checkButton = document.querySelector("#keyword-check__submit");
 
 // Event listeners
+
 checkButton.addEventListener("click", checkKeyword);
 
 // Inserts the title and meta description in the info box on the keywords tab, and the amount of words on the page
+
 function displayTagInfo(tag, name) {
   const tags = pageInfo[tag];
   const div = document.getElementById(`keyword-check-infobox__div-${tag}`);
@@ -282,6 +286,7 @@ function displayImageInfo() {
 }
 
 // reset the title and meta tag on the keyword tab (removes search marking)
+
 function resetTagInfo(tag, name) {
   const infoBoxTags = document.querySelectorAll(
     `.keyword-check-infobox__body-${tag}`
@@ -292,11 +297,13 @@ function resetTagInfo(tag, name) {
 }
 
 // checks the keyword in the page information object
+
 function checkKeyword(event) {
   event.preventDefault();
   const keyword = document.querySelector("#keyword-check__input").value;
 
   // reset the info box with title and meta tag (removes marking)
+
   resetTagInfo("title", "title tag");
   resetTagInfo("meta", "meta description");
 
@@ -424,14 +431,12 @@ function removeKeywordResults() {
     "section-item-container__keyword-in-images"
   );
 
-  console.log("now removing");
   const keywordCountResult = document.getElementById(
     "section-item-content__keyword-count-result"
   );
   const keywordDensityResult = document.getElementById(
     "section-item-content__keyword-density-result"
   );
-  console.log("removed");
   if (keywordCountResult) keywordCountResult.remove();
   if (keywordDensityResult) keywordDensityResult.remove();
 
@@ -487,16 +492,16 @@ function checkKeywordInImages(kw) {
 
 /******************************** links tab *********************************/
 
-function displayLinks(linksArr, type) {
-  const links = pageInfo[linksArr];
-  const linkTitle = document.getElementById(`section-heading__${type}-links`);
-  const linkContainer = document.getElementById(
-    `section-item-container__${type}-links`
-  );
-  let counter = 0;
+// Checks if there are links, and whether they're broken or not
 
+async function checkIntLinks(arr, type) {
+  const links = pageInfo[arr];
+
+  // check if the array contains any links, if not, skip
   if (links === "--none--") {
-    linkTitle.textContent = `Internal links (0)`;
+    linkTitle.textContent = `${
+      type.slice(0, 1).toUpperCase() + type.slice(1)
+    } links (0)`;
     element = `
         <p
           class="section-item-content section-item-content__keyword-in-images"
@@ -508,11 +513,67 @@ function displayLinks(linksArr, type) {
     return;
   }
 
+  // get server response code for all links
+  const linkTitle = document.getElementById(`section-heading__${type}-links`);
+  const linkContainer = document.getElementById(
+    `section-item-container__${type}-links`
+  );
+  let counter = 0;
+
+  links.forEach(async (link) => {
+    if (!link["status"]) {
+      result = await fetch(link["href"], { method: "HEAD" });
+      link["status"] = result.status;
+      displayIntLinks(link, type, linkContainer);
+      counter++;
+    } else {
+      displayIntLinks(link, type, linkContainer);
+      counter++;
+    }
+    linkTitle.textContent = `${type[0].toUpperCase()}${type.slice(1)} links (${
+      counter === links.length
+        ? `${counter} checked links`
+        : `still checking ${links.length - counter} links`
+    })`;
+  });
+}
+
+function displayIntLinks(link, type, linkContainer) {
+  element = `
+  <div class="section-item section-item-column section-item__link">
+    <h3 class="section-item-title section-item-title__link">
+      Anchor text: ${
+        link.textContent === "" ? "no anchor text found" : link.textContent
+      }
+      ${
+        link.status !== 200
+          ? '<span class="broken-link">broken</span>'
+          : '<span class="active-link">active</span>'
+      }
+    </h3>
+    <p class="section-item-content section-item-content__link">
+      <a href="${link.href}">${link.href}</a>
+    </p>
+</div>`;
+  linkContainer.insertAdjacentHTML("beforeend", element);
+}
+
+function displayExtLinks(arr, type) {
+  const links = pageInfo[arr];
+  const linkTitle = document.getElementById(`section-heading__${type}-links`);
+  const linkContainer = document.getElementById(
+    `section-item-container__${type}-links`
+  );
+  let counter = 0;
+
   links.forEach((link) => {
+    // evaluate if link is broken
     element = `
       <div class="section-item section-item-column section-item__link">
         <h3 class="section-item-title section-item-title__link">
-          Anchor text: ${link.textContent}
+          Anchor text: ${
+            link.textContent === "" ? "no anchor text found" : link.textContent
+          }
         </h3>
         <p class="section-item-content section-item-content__link">
           <a href="${link.href}">${link.href}</a>

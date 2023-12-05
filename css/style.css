@@ -197,3 +197,17 @@ input.keyword-check__submit:hover {
 .section-item-body {
   margin-top: 4px;
 }
+
+.broken-link {
+  font-family: "Roboto Medium";
+  background: #f48177;
+  padding: 2px 12px;
+  border-radius: 30px;
+}
+
+.active-link {
+  font-family: "Roboto Medium";
+  background: #d5eabb;
+  padding: 2px 12px;
+  border-radius: 30px;
+}
