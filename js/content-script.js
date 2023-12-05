@@ -71,11 +71,15 @@ function getLinks() {
 async function checkIntLinks(linkArr) {
   checkedLinks.links = await Promise.all(
     linkArr.map(async (link) => {
-      res = await fetch(link["href"], { method: "HEAD", mode: "no-cors" });
+      checkLink = link["href"].replace(/http:/, "https:");
+      res = await fetch(checkLink, {
+        method: "HEAD",
+        mode: "no-cors",
+      }).catch((err) => console.log(err));
       return {
         textContent: link.textContent,
         href: link.href,
-        linkStatus: res.status,
+        linkStatus: res?.status ?? "issue with link",
       };
     })
   );

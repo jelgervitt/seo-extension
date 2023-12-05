@@ -509,6 +509,15 @@ function displayLinks(arr, type) {
 
   links.forEach((link) => {
     // evaluate if link is broken
+    if (type === "internal") {
+      const re = new RegExp("http:");
+      if (re.test(link.href))
+        linkEval = '<span class="insecure-link">insecure</span>';
+      else if (link.linkStatus === 200)
+        linkEval = '<span class="active-link">active</span>';
+      else linkEval = '<span class="broken-link">broken</span>';
+    }
+
     element = `
         <div class="section-item section-item-column section-item__link">
           <p class="section-item-title section-item-title__link">
@@ -523,15 +532,7 @@ function displayLinks(arr, type) {
           </p>
         <p class="section-item-content section-item-content__link">
           <a href="${link.href}">${link.href}</a>
-          ${
-            type === "internal"
-              ? `${
-                  link.linkStatus !== 200
-                    ? '<span class="broken-link">broken</span>'
-                    : '<span class="active-link">active</span>'
-                }`
-              : ""
-          }
+          ${type === "internal" ? linkEval : ""}
         </p>
        </div>`;
 
