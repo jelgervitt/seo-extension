@@ -1,5 +1,6 @@
 if (typeof pageInfo === "undefined") {
   pageInfo = {};
+  checkedLinks = {};
 }
 
 //  get title or meta tag
@@ -60,6 +61,28 @@ function getLinks() {
     .map((link) => {
       return { textContent: link.innerText, href: link.href };
     });
+
+  // safeguard to only check the links once per page load to not overload server
+  if (Object.entries(checkedLinks).length === 0)
+    checkIntLinks(pageInfo.intLinks);
+}
+
+// check for broken internal links
+async function checkIntLinks(linkArr) {
+  checkedLinks.links = await Promise.all(
+    linkArr.map(async (link) => {
+      res = await fetch(link["href"], { method: "HEAD", mode: "no-cors" });
+      return {
+        textContent: link.textContent,
+        href: link.href,
+        linkStatus: res.status,
+      };
+    })
+  );
+
+  checkedLinks.objContent = "checked_links";
+
+  chrome.runtime.sendMessage(checkedLinks);
 }
 
 function getPageInfo() {
@@ -79,8 +102,13 @@ function getPageInfo() {
 
   // get all hyperlinks
   getLinks();
+
+  pageInfo.objContent = "seo";
+  chrome.runtime.sendMessage(pageInfo);
 }
 
-getPageInfo();
-
-chrome.runtime.sendMessage(pageInfo);
+if (Object.entries(pageInfo).length === 0) getPageInfo();
+else {
+  chrome.runtime.sendMessage(pageInfo);
+  chrome.runtime.sendMessage(checkedLinks);
+}

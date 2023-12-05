@@ -2,29 +2,37 @@
 // get id of tab that was open before popup
 
 let pageInfo;
+let checkedLinks;
 
-const getTabId = async function () {
+async function getTabId() {
   let queryOptions = { active: true, lastFocusedWindow: true };
   let [tab] = await chrome.tabs.query(queryOptions);
   return tab.id;
-};
+}
 
 // inject script into page that needs to be processed, then return
 
-const injectScript = async function () {
+async function injectScript() {
   getTabId().then((theTab) => {
     chrome.scripting.executeScript({
       target: { tabId: theTab },
       files: ["./js/content-script.js"],
     });
   });
-};
+}
 
 injectScript();
 
 chrome.runtime.onMessage.addListener((message) => {
-  pageInfo = message;
-  displayAllInformation();
+  if (message.objContent === "seo") {
+    pageInfo = message;
+    displayAllInformation();
+  }
+
+  if (message.objContent === "checked_links") {
+    checkedLinks = message.links;
+    displayLinks(checkedLinks, "internal");
+  }
 });
 
 /**************************************** tabs *******************************************/
@@ -35,8 +43,7 @@ function displayAllInformation() {
   checkTag("meta", "Meta description");
   checkHeadings();
   checkImages();
-  checkIntLinks("intLinks", "internal");
-  displayExtLinks("extLinks", "external");
+  displayLinks(pageInfo.extLinks, "external");
   displayTagInfo("title", "title tag");
   displayTagInfo("meta", "meta description");
   displayWordCount();
@@ -492,74 +499,8 @@ function checkKeywordInImages(kw) {
 
 /******************************** links tab *********************************/
 
-// Checks if there are links, and whether they're broken or not
-
-async function checkIntLinks(arr, type) {
-  const links = pageInfo[arr];
-
-  // check if the array contains any links, if not, skip
-  if (links === "--none--") {
-    linkTitle.textContent = `${
-      type.slice(0, 1).toUpperCase() + type.slice(1)
-    } links (0)`;
-    element = `
-        <p
-          class="section-item-content section-item-content__keyword-in-images"
-        >
-          No ${type} links found on the page
-        </p>
-    `;
-    linkTitle.insertAdjacentHTML("beforeend", element);
-    return;
-  }
-
-  // get server response code for all links
-  const linkTitle = document.getElementById(`section-heading__${type}-links`);
-  const linkContainer = document.getElementById(
-    `section-item-container__${type}-links`
-  );
-  let counter = 0;
-
-  links.forEach(async (link) => {
-    if (!link["status"]) {
-      result = await fetch(link["href"], { method: "HEAD" });
-      link["status"] = result.status;
-      displayIntLinks(link, type, linkContainer);
-      counter++;
-    } else {
-      displayIntLinks(link, type, linkContainer);
-      counter++;
-    }
-    linkTitle.textContent = `${type[0].toUpperCase()}${type.slice(1)} links (${
-      counter === links.length
-        ? `${counter} checked links`
-        : `still checking ${links.length - counter} links`
-    })`;
-  });
-}
-
-function displayIntLinks(link, type, linkContainer) {
-  element = `
-  <div class="section-item section-item-column section-item__link">
-    <p class="section-item-title section-item-title__link">
-    <span class="link-anchor-text">Anchor text</span> ${
-      link.textContent === "" ? "no anchor text found" : link.textContent
-    }
-    </p>
-    <p class="section-item-content section-item-content__link">
-    <a href="${link.href}">${link.href}</a>
-    ${
-      link.status !== 200
-        ? '<span class="broken-link">broken</span>'
-        : '<span class="active-link">active</span>'
-    }
-    </p> 
-</div>`;
-  linkContainer.insertAdjacentHTML("beforeend", element);
-}
-
-function displayExtLinks(arr, type) {
-  const links = pageInfo[arr];
+function displayLinks(arr, type) {
+  const links = arr;
   const linkTitle = document.getElementById(`section-heading__${type}-links`);
   const linkContainer = document.getElementById(
     `section-item-container__${type}-links`
@@ -569,16 +510,31 @@ function displayExtLinks(arr, type) {
   links.forEach((link) => {
     // evaluate if link is broken
     element = `
-      <div class="section-item section-item-column section-item__link">
-        <h3 class="section-item-title section-item-title__link">
-          <span class="link-anchor-text">Anchor text:</span> ${
-            link.textContent === "" ? "no anchor text found" : link.textContent
-          }
-        </h3>
+        <div class="section-item section-item-column section-item__link">
+          <p class="section-item-title section-item-title__link">
+            <span class="link-anchor-text">
+              Anchor text:
+            </span> 
+              ${
+                link.textContent === ""
+                  ? "no anchor text found"
+                  : link.textContent
+              }
+          </p>
         <p class="section-item-content section-item-content__link">
           <a href="${link.href}">${link.href}</a>
+          ${
+            type === "internal"
+              ? `${
+                  link.linkStatus !== 200
+                    ? '<span class="broken-link">broken</span>'
+                    : '<span class="active-link">active</span>'
+                }`
+              : ""
+          }
         </p>
-    </div>`;
+       </div>`;
+
     linkContainer.insertAdjacentHTML("beforeend", element);
     counter++;
   });
