@@ -123,7 +123,10 @@ function checkHeadings() {
     if (h.nodeName === "H1") h1.push(h);
     if (h.nodeName === "H2") h2.push(h);
     if (h.nodeName !== "H1" && h.nodeName !== "H2") {
-      par = `<p class="section-item-h-other__body-${h.localName}">(${h.nodeName}) ${h.textContent}</p>`;
+      par = `<p class="section-item-h-other__body-${h.localName}"><img
+        src="../images/seo-extension-${h.nodeName}.svg"
+        class="title-icon"
+        /> ${h.textContent}</p>`;
       div.insertAdjacentHTML("beforeend", par);
       counter++;
     }

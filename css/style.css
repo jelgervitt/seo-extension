@@ -89,6 +89,13 @@ ul {
   width: 32px;
 }
 
+.title-icon {
+  margin-top: -2px;
+  margin-right: 8px;
+  width: 24px;
+  vertical-align: middle;
+}
+
 .tab {
   padding: 12px 12px;
   display: none;
