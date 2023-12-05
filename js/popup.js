@@ -541,19 +541,19 @@ async function checkIntLinks(arr, type) {
 function displayIntLinks(link, type, linkContainer) {
   element = `
   <div class="section-item section-item-column section-item__link">
-    <h3 class="section-item-title section-item-title__link">
-      Anchor text: ${
-        link.textContent === "" ? "no anchor text found" : link.textContent
-      }
-      ${
-        link.status !== 200
-          ? '<span class="broken-link">broken</span>'
-          : '<span class="active-link">active</span>'
-      }
-    </h3>
-    <p class="section-item-content section-item-content__link">
-      <a href="${link.href}">${link.href}</a>
+    <p class="section-item-title section-item-title__link">
+    <span class="link-anchor-text">Anchor text</span> ${
+      link.textContent === "" ? "no anchor text found" : link.textContent
+    }
     </p>
+    <p class="section-item-content section-item-content__link">
+    <a href="${link.href}">${link.href}</a>
+    ${
+      link.status !== 200
+        ? '<span class="broken-link">broken</span>'
+        : '<span class="active-link">active</span>'
+    }
+    </p> 
 </div>`;
   linkContainer.insertAdjacentHTML("beforeend", element);
 }
@@ -571,7 +571,7 @@ function displayExtLinks(arr, type) {
     element = `
       <div class="section-item section-item-column section-item__link">
         <h3 class="section-item-title section-item-title__link">
-          Anchor text: ${
+          <span class="link-anchor-text">Anchor text:</span> ${
             link.textContent === "" ? "no anchor text found" : link.textContent
           }
         </h3>
