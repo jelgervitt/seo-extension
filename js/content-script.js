@@ -93,6 +93,7 @@ function getPageInfo() {
   // page info for meta tag tab (args are always: 'element name', 'property name in pageInfo', 'attribute to extract')
   getTag("title", "title", "textContent");
   getTag("meta[name='description']", "meta", "content");
+  getTag("meta[name='robots']", "robots", "content");
   getTag("link[rel='canonical']", "canonical", "href");
 
   // page info for titles tab

@@ -41,6 +41,7 @@ chrome.runtime.onMessage.addListener((message) => {
 function displayAllInformation() {
   checkTag("title", "Title tag");
   checkTag("meta", "Meta description");
+  checkTag("robots", "Robots tag");
   checkHeadings();
   checkImages();
   displayLinks(pageInfo.extLinks, "external");
@@ -531,7 +532,7 @@ function displayLinks(arr, type) {
               }
           </p>
         <p class="section-item-content section-item-content__link">
-          <a href="${link.href}">${link.href}</a>
+          <a href="${link.href}" target="_blank">${link.href}</a>
           ${type === "internal" ? linkEval : ""}
         </p>
        </div>`;
