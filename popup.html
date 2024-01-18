@@ -14,7 +14,7 @@
 
             <div class="nav">
                 <div class="nav-left">
-                    <div class="nav-item nav-item__active" data-tab="meta-tags">
+                    <div class="nav-item" data-tab="meta-tags">
                         <a href="#">Meta tags</a>
                     </div>
                     <div class="nav-item" data-tab="headings">
@@ -31,7 +31,10 @@
                     </div>
                 </div>
                 <div class="nav-right">
-                    <div class="nav-item nav-item-export" data-tab="export">
+                    <div
+                        class="nav-item nav-item-export nav-item__active"
+                        data-tab="export"
+                    >
                         <svg class="export-icon"></svg>
                     </div>
                 </div>
@@ -39,7 +42,7 @@
 
             <!-- ----------- Start of Meta tags tab ---------------- -->
 
-            <div class="tab tab__active" id="tab__meta-tags">
+            <div class="tab" id="tab__meta-tags">
                 <section id="section__title">
                     <h2 class="section-heading" id="section-heading__title">
                         Title tag
@@ -377,6 +380,81 @@
                 </section>
             </div>
 
+            <!-- ----------------End of links tab --------------- -->
+
+            <!-- ----------------Start of export tab --------------- -->
+            <div class="tab tab__active" id="tab__export">
+                <section id="section__export">
+                    <h2 class="section-heading" id="section-heading__export">
+                        Download Results
+                    </h2>
+                    <div
+                        class="section-item-container"
+                        id="section-item-container__export"
+                    >
+                        <p class="export-option">
+                            Select:
+                            <span class="export-option" id="export-choice__all"
+                                >All</span
+                            >
+                            /
+                            <span class="export-option" id="export-choice__none"
+                                >None</span
+                            >
+                        </p>
+
+                        <div class="export-choice-container">
+                            <div class="export-choice">
+                                <input
+                                    type="checkbox"
+                                    id="export-choice__meta-tags"
+                                    name="document"
+                                    value="meta-tags"
+                                    checked
+                                />
+                                <label for="export-choice__meta-tags"
+                                    >Meta tags</label
+                                >
+                            </div>
+                            <div class="export-choice">
+                                <input
+                                    type="checkbox"
+                                    id="export-choice__headings"
+                                    name="document"
+                                    value="headings"
+                                    checked
+                                />
+                                <label for="export-choice__headings"
+                                    ><span class="checkmark"></span
+                                    >Headings</label
+                                >
+                            </div>
+                            <div class="export-choice">
+                                <input
+                                    type="checkbox"
+                                    id="export-choice__images"
+                                    name="document"
+                                    value="images"
+                                    checked
+                                />
+                                <label for="export-choice__images"
+                                    >Images</label
+                                >
+                            </div>
+                            <div class="export-choice">
+                                <input
+                                    type="checkbox"
+                                    id="export-choice__links"
+                                    name="document"
+                                    value="links"
+                                    checked
+                                />
+                                <label for="export-choice__links">Links</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
             <!-- ----------------End of links tab --------------- -->
         </div>
     </body>

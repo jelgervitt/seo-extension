@@ -78,6 +78,7 @@ ul {
     font-family: 'Roboto Medium';
     font-size: 1rem;
     padding: 8px 3px;
+    border-bottom: 2px solid #ffddb4;
 }
 
 .nav-item:hover,
@@ -247,6 +248,38 @@ svg.export-icon:hover {
     transition: ease-in-out 200ms;
 }
 
+.nav-item-export {
+    border-bottom: none;
+}
+
 .nav-item-export:hover {
     border-bottom: none;
+}
+
+#section-item-container__export {
+    margin-top: 8px;
+    margin-left: 1px;
+}
+
+.export-option {
+    color: currentColor;
+}
+
+.export-option {
+    font-weight: bold;
+}
+
+span.export-option:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.export-choice-container {
+    padding-top: 12px;
+}
+
+.export-choice > label {
+    font-size: 1.2rem;
+    padding: 4px;
+    line-height: 2rem;
 }
